@@ -35,20 +35,6 @@ provider:
     SIGNED_URL_EXPIRATION: 300
     IMAGES_S3_BUCKET: aaltheiab-serverless-todos-images-${self:provider.stage}
 
-# custom:
-#   documentation:
-#     api:
-#       info:
-#         version: v1.0.0
-#         title: Todo API
-#         description: Serverless application for TODO
-
-    # models:
-    #   - name: CreateTodoRequest
-    #     contentType: application/json
-    #     schema: ${file(src/models/create-todo-request.json)}
-
-
 functions:
 
   Auth:
