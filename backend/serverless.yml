@@ -18,6 +18,7 @@ provider:
         - dynamodb:Scan
         - dynamodb:PutItem
         - dynamodb:GetItem
+        - dynamodb:UpdateItem
         - dynamodb:Query
       Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
@@ -27,10 +28,19 @@ provider:
     INDEX_NAME: TodoIndex
     SIGNED_URL_EXPIRATION: 300
     IMAGES_S3_BUCKET: aaltheiab-serverless-todos-images-${self:provider.stage} 
-    # THUMBNAILS_S3_BUCKET: aaltheiab-serverless-udagram-thumbnail-${self:provider.stage}
-    # CONNECTIONS_TABLE: Connections-${self:provider.stage}
-    # AUTH_0_SECRET_ID: Auth0Secret-${self:provider.stage}
-    # AUTH_0_SECRET_FIELD: auth0Secret
+
+custom:
+  documentation:
+    api:
+      info:
+        version: v1.0.0
+        title: Todo API
+        description: Serverless application for TODO
+
+    models:
+      - name: CreateTodoRequest
+        contentType: application/json
+        schema: ${file(src/models/create-todo-request.json)}
 
 
 functions:
@@ -55,14 +65,21 @@ functions:
           method: post
           path: todos
           authorizer: Auth
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Create a new image
+            description: Create a new image
+            requestModels:
+              'application/json': CreateTodoRequest
 
   # # TODO: Configure this function
-  # UpdateTodo:
-  #   handler: src/lambda/http/updateTodo.handler
-  #   events:
-  #     - http:
-  #         method: patch
-  #         path: todos/{todoId}
+  UpdateTodo:
+    handler: src/lambda/http/updateTodo.handler
+    events:
+      - http:
+          method: patch
+          path: todos/{todoId}
+          authorizer: Auth
 
   # # TODO: Configure this function
   # DeleteTodo:
@@ -118,14 +135,14 @@ resources:
         KeySchema:
           - AttributeName: userId
             KeyType: HASH
-          - AttributeName: createdAt
+          - AttributeName: todoId
             KeyType: RANGE
         LocalSecondaryIndexes:
           - IndexName: ${self:provider.environment.INDEX_NAME}
             KeySchema:
               - AttributeName: userId
                 KeyType: HASH
-              - AttributeName: todoId
+              - AttributeName: createdAt
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL # What attributes will be copied to an index
@@ -167,14 +184,14 @@ resources:
         Bucket: !Ref AttachmentsBucket         
 
     
-    # RequestBodyValidator:
-    #   Type: AWS::ApiGateway::RequestValidator
-    #   Properties:
-    #     Name: 'request-body-validator'
-    #     RestApiId:
-    #       Ref: ApiGatewayRestApi
-    #     ValidateRequestBody: true
-    #     ValidateRequestParameters: false
+    RequestBodyValidator:
+      Type: AWS::ApiGateway::RequestValidator
+      Properties:
+        Name: 'request-body-validator'
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ValidateRequestBody: true
+        ValidateRequestParameters: false
 
     # KMSKey:
     #   Type: AWS::KMS::Key

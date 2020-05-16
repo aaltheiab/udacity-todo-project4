@@ -2,6 +2,7 @@ import * as AWS from 'aws-sdk'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { TodoItem } from '../models/TodoItem'
 import { CreateTodoRequest } from '../requests/CreateTodoRequest'
+import { TodoUpdate } from '../models/TodoUpdate'
 
 function createDynamoDBClient() {
   return new AWS.DynamoDB.DocumentClient()
@@ -48,5 +49,33 @@ export class TodoAccess {
 
     return newItem as TodoItem
   }
+
+  async updateTodo(userId: string, todoId: string, updatedTodo: TodoUpdate): Promise<TodoItem> {
+
+    var params = {
+      TableName: this.todosTable,
+      Key: {
+        "userId": userId,
+        "todoId": todoId
+      },
+      UpdateExpression: "set #name = :name, dueDate = :dueDate, done = :done",
+      ExpressionAttributeNames: {
+        '#name': 'name'
+      }, 
+      ExpressionAttributeValues: {
+        ":name": updatedTodo.name,
+        ":dueDate": updatedTodo.dueDate,
+        ":done": updatedTodo.done
+      },
+      ReturnValues: "UPDATED_NEW"
+    };
+
+    // source:
+    // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.03
+    const updatedItem = await this.docClient.update(params).promise();
+
+    return updatedItem.Attributes as TodoItem
+  }
+
 }
 
