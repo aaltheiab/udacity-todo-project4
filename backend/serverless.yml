@@ -20,6 +20,7 @@ provider:
         - dynamodb:GetItem
         - dynamodb:UpdateItem
         - dynamodb:Query
+        - dynamodb:DeleteItem
       Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
 
@@ -82,12 +83,12 @@ functions:
           authorizer: Auth
 
   # # TODO: Configure this function
-  # DeleteTodo:
-  #   handler: src/lambda/http/deleteTodo.handler
-  #   events:
-  #     - http:
-  #         method: delete
-  #         path: todos/{todoId}
+  DeleteTodo:
+    handler: src/lambda/http/deleteTodo.handler
+    events:
+      - http:
+          method: delete
+          path: todos/{todoId}
 
   # # TODO: Configure this function
   # GenerateUploadUrl:

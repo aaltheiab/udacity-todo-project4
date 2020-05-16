@@ -61,7 +61,7 @@ export class TodoAccess {
       UpdateExpression: "set #name = :name, dueDate = :dueDate, done = :done",
       ExpressionAttributeNames: {
         '#name': 'name'
-      }, 
+      },
       ExpressionAttributeValues: {
         ":name": updatedTodo.name,
         ":dueDate": updatedTodo.dueDate,
@@ -75,6 +75,22 @@ export class TodoAccess {
     const updatedItem = await this.docClient.update(params).promise();
 
     return updatedItem.Attributes as TodoItem
+  }
+
+
+  async deleteTodo(userId: string, todoId: string): Promise<void> {
+
+    var params = {
+      TableName: this.todosTable,
+      Key: {
+        "userId": userId,
+        "todoId": todoId
+      }
+    };
+
+    // source:
+    // https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.NodeJs.03.html#GettingStarted.NodeJs.03.06
+    await this.docClient.delete(params).promise();
   }
 
 }
