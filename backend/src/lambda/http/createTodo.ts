@@ -4,14 +4,24 @@ import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } f
 import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
 import { getUserId } from '../utils'
 import {createTodo} from '../../businessLogic/todos'
+import { createLogger } from '../../utils/logger'
+const logger = createLogger('createTodos')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const newTodo: CreateTodoRequest = JSON.parse(event.body)
+
+    logger.info('creating a new TODO Item. User Authenticated successfully', event)
+
 
     // TODO: Implement creating a new TODO item
     const todoId = uuid.v4();
     const userId = getUserId(event)
     const result = await createTodo(userId, todoId, newTodo)
+
+    logger.info('UserId Fetched + created a new TODO Item.', {
+        todoId,
+        userId
+    })
 
     return {
         statusCode: 201,
